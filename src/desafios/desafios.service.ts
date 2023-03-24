@@ -4,6 +4,7 @@ import { Desafio } from './interfaces/desafio.interface';
 import { Model } from 'mongoose';
 import { DesafioStatus } from './desafio-status.enum';
 import { RpcException } from '@nestjs/microservices';
+import * as momentTimezone from 'moment-timezone'
 
 @Injectable()
 export class DesafiosService {
@@ -63,7 +64,39 @@ export class DesafiosService {
                 throw new RpcException(error.message)
             }
 
-    } 
+    }
+    
+    async consultarDesafiosRealizados(idCategoria: string): Promise<Desafio[]> {
+        try {
+            return await this.desafioModel.find()
+            .where('categoria')
+            .equals(idCategoria)
+            .where('status')
+            .equals(DesafioStatus.REALIZADO)
+            .exec()
+        } catch (error) {
+            this.logger.error(`error: ${JSON.stringify(error.message)}`)
+            throw new RpcException(error.message)
+        }
+    }
+
+    async consultarDesafiosRealizadosPelaData(idCategoria: string, dataRef: string): Promise<Desafio[]> {
+        try {
+            const dataRefNew = `${dataRef} 23:59:59.999`
+
+            return await this.desafioModel.find()
+            .where('categoria')
+            .equals(idCategoria)
+            .where('status')
+            .equals(DesafioStatus.REALIZADO)
+            .where('dataHoraDesafio')
+            .lte(momentTimezone(dataRefNew).tz('UTC').format('YYYY-MM-DD HH:mm:ss.SSS+00:00'))
+            .exec()
+        } catch (error) {
+            this.logger.error(`error: ${JSON.stringify(error.message)}`)
+            throw new RpcException(error.message)
+        }
+    }
 
     async atualizarDesafio(_id: string, desafio: Desafio ): Promise<void> {
         try {
