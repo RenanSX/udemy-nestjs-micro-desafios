@@ -42,4 +42,15 @@ getClientProxyRankingsInstance(): ClientProxy {
 })
 }
 
+getClientProxyNotificacoesInstance(): ClientProxy {        
+
+  return ClientProxyFactory.create({
+  transport: Transport.RMQ,
+  options: {
+    urls: [`amqp://${this.configService.get<string>('RABBITMQ_USER')}:${this.configService.get<string>('RABBITMQ_PASSWORD')}@${this.configService.get<string>('RABBITMQ_URL')}`],
+    queue: 'notificacoes'
+  }
+})
+}
+
 }
